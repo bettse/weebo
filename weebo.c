@@ -15,6 +15,44 @@ void calculate_pwd(uint8_t* uid, uint8_t* pwd) {
     pwd[3] = uid[4] ^ uid[6] ^ 0x55;
 }
 
+bool weebo_load_key_retail(Weebo* weebo) {
+    FuriString* path = furi_string_alloc();
+    bool parsed = false;
+    uint8_t buffer[160];
+    memset(buffer, 0, sizeof(buffer));
+    Storage* storage = furi_record_open(RECORD_STORAGE);
+    Stream* stream = file_stream_alloc(storage);
+
+    do {
+        furi_string_printf(
+            path, "%s/%s%s", STORAGE_APP_DATA_PATH_PREFIX, WEEBO_KEY_RETAIL_FILENAME, ".bin");
+
+        bool opened =
+            file_stream_open(stream, furi_string_get_cstr(path), FSAM_READ, FSOM_OPEN_EXISTING);
+        if(!opened) {
+            FURI_LOG_E(TAG, "Failed to open file");
+            break;
+        }
+
+        size_t bytes_read = stream_read(stream, buffer, sizeof(buffer));
+        if(bytes_read != sizeof(buffer)) {
+            FURI_LOG_E(TAG, "Insufficient data");
+            break;
+        }
+
+        memcpy(&weebo->amiiboKeys, buffer, bytes_read);
+
+        // TODO: compare SHA1
+        parsed = true;
+    } while(false);
+
+    file_stream_close(stream);
+    furi_record_close(RECORD_STORAGE);
+    furi_string_free(path);
+
+    return parsed;
+}
+
 bool weebo_custom_event_callback(void* context, uint32_t event) {
     furi_assert(context);
     Weebo* weebo = context;
@@ -97,6 +135,8 @@ Weebo* weebo_alloc() {
     weebo->storage = furi_record_open(RECORD_STORAGE);
     weebo->dialogs = furi_record_open(RECORD_DIALOGS);
     weebo->load_path = furi_string_alloc();
+
+    weebo->keys_loaded = false;
 
     return weebo;
 }
@@ -209,7 +249,12 @@ int32_t weebo_app(void* p) {
     UNUSED(p);
     Weebo* weebo = weebo_alloc();
 
-    scene_manager_next_scene(weebo->scene_manager, WeeboSceneStart);
+    weebo->keys_loaded = weebo_load_key_retail(weebo);
+    if(weebo->keys_loaded) {
+        scene_manager_next_scene(weebo->scene_manager, WeeboSceneMainMenu);
+    } else {
+        scene_manager_next_scene(weebo->scene_manager, WeeboSceneKeysMissing);
+    }
 
     view_dispatcher_run(weebo->view_dispatcher);
 
