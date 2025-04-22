@@ -31,7 +31,7 @@ bool weebo_scene_saved_menu_on_event(void* context, SceneManagerEvent event) {
     if(event.type == SceneManagerEventTypeCustom) {
         scene_manager_set_scene_state(weebo->scene_manager, WeeboSceneSavedMenu, event.event);
         if(event.event == SubmenuIndexWrite) {
-            // scene_manager_next_scene(weebo->scene_manager, WeeboSceneWrite);
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneWrite);
             consumed = true;
         }
     }

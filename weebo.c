@@ -4,19 +4,6 @@
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 
-/*
-uint8_t original[NTAG215_SIZE];
-uint8_t plain_base[NFC3D_AMIIBO_SIZE];
-uint8_t modified[NTAG215_SIZE];
-
-void calculate_pwd(uint8_t* uid, uint8_t* pwd) {
-    pwd[0] = uid[1] ^ uid[3] ^ 0xAA;
-    pwd[1] = uid[2] ^ uid[4] ^ 0x55;
-    pwd[2] = uid[3] ^ uid[5] ^ 0xAA;
-    pwd[3] = uid[4] ^ uid[6] ^ 0x55;
-}
-*/
-
 bool weebo_load_key_retail(Weebo* weebo) {
     FuriString* path = furi_string_alloc();
     bool parsed = false;
