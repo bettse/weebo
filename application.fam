@@ -14,4 +14,11 @@ App(
     fap_author="bettse",
     fap_weburl="https://github.com/bettse/weebo",
     fap_icon_assets="images",  # Image assets to compile for this application
+    fap_libs=["mbedtls"],
+    fap_private_libs=[
+        Lib(
+            name="amiitool",
+        ),
+    ],
+
 )
