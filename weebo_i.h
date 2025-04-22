@@ -19,6 +19,7 @@
 
 #include <input/input.h>
 #include <lib/flipper_format/flipper_format.h>
+#include <lib/toolbox/path.h>
 
 #include <lib/nfc/nfc.h>
 #include <nfc/nfc_poller.h>
@@ -51,6 +52,8 @@ enum WeeboCustomEvent {
     WeeboCustomEventNumberInputDone,
 };
 
+typedef void (*WeeboLoadingCallback)(void* context, bool state);
+
 struct Weebo {
     ViewDispatcher* view_dispatcher;
     Gui* gui;
@@ -80,6 +83,11 @@ struct Weebo {
 
     bool keys_loaded;
     nfc3d_amiibo_keys amiiboKeys;
+
+    WeeboLoadingCallback loading_cb;
+    void* loading_cb_ctx;
+
+    uint8_t figure[NFC3D_AMIIBO_SIZE];
 };
 
 typedef enum {
@@ -101,3 +109,6 @@ void weebo_blink_start(Weebo* weebo);
 void weebo_blink_stop(Weebo* weebo);
 
 void weebo_show_loading_popup(void* context, bool show);
+
+void weebo_set_loading_callback(Weebo* weebo, WeeboLoadingCallback callback, void* context);
+bool weebo_file_select(Weebo* weebo);

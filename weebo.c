@@ -4,6 +4,7 @@
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 
+/*
 uint8_t original[NTAG215_SIZE];
 uint8_t plain_base[NFC3D_AMIIBO_SIZE];
 uint8_t modified[NTAG215_SIZE];
@@ -14,6 +15,7 @@ void calculate_pwd(uint8_t* uid, uint8_t* pwd) {
     pwd[2] = uid[3] ^ uid[5] ^ 0xAA;
     pwd[3] = uid[4] ^ uid[6] ^ 0x55;
 }
+*/
 
 bool weebo_load_key_retail(Weebo* weebo) {
     FuriString* path = furi_string_alloc();
@@ -51,6 +53,88 @@ bool weebo_load_key_retail(Weebo* weebo) {
     furi_string_free(path);
 
     return parsed;
+}
+
+bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
+    bool parsed = false;
+    uint8_t buffer[NTAG215_SIZE];
+    memset(buffer, 0, sizeof(buffer));
+
+    Storage* storage = furi_record_open(RECORD_STORAGE);
+    Stream* stream = file_stream_alloc(storage);
+
+    if(weebo->loading_cb) {
+        weebo->loading_cb(weebo->loading_cb_ctx, true);
+    }
+
+    // TODO: reject if the selected file is key_retail
+    do {
+        bool opened =
+            file_stream_open(stream, furi_string_get_cstr(path), FSAM_READ, FSOM_OPEN_EXISTING);
+        if(!opened) {
+            FURI_LOG_E(TAG, "Failed to open file");
+            break;
+        }
+
+        size_t bytes_read = stream_read(stream, buffer, sizeof(buffer));
+        if(bytes_read != sizeof(buffer)) {
+            FURI_LOG_E(TAG, "Insufficient data");
+            break;
+        }
+
+        if(!nfc3d_amiibo_unpack(&weebo->amiiboKeys, buffer, weebo->figure)) {
+            FURI_LOG_E(TAG, "Failed to unpack");
+            break;
+        }
+
+        parsed = true;
+    } while(false);
+
+    file_stream_close(stream);
+    furi_record_close(RECORD_STORAGE);
+
+    if(weebo->loading_cb) {
+        weebo->loading_cb(weebo->loading_cb_ctx, false);
+    }
+
+    if((!parsed) && (show_dialog)) {
+        dialog_message_show_storage_error(weebo->dialogs, "Can not parse\nfile");
+    }
+
+    return parsed;
+}
+
+void weebo_set_loading_callback(Weebo* weebo, WeeboLoadingCallback callback, void* context) {
+    furi_assert(weebo);
+
+    weebo->loading_cb = callback;
+    weebo->loading_cb_ctx = context;
+}
+
+bool weebo_file_select(Weebo* weebo) {
+    furi_assert(weebo);
+    bool res = false;
+
+    FuriString* weebo_app_folder = furi_string_alloc_set(STORAGE_APP_DATA_PATH_PREFIX);
+
+    DialogsFileBrowserOptions browser_options;
+    dialog_file_browser_set_basic_options(&browser_options, ".bin", &I_Nfc_10px);
+    browser_options.base_path = STORAGE_APP_DATA_PATH_PREFIX;
+
+    res = dialog_file_browser_show(
+        weebo->dialogs, weebo->load_path, weebo_app_folder, &browser_options);
+
+    furi_string_free(weebo_app_folder);
+    if(res) {
+        FuriString* filename;
+        filename = furi_string_alloc();
+        path_extract_filename(weebo->load_path, filename, true);
+        strncpy(weebo->file_name, furi_string_get_cstr(filename), WEEBO_FILE_NAME_MAX_LENGTH);
+        res = weebo_load_figure(weebo, weebo->load_path, true);
+        furi_string_free(filename);
+    }
+
+    return res;
 }
 
 bool weebo_custom_event_callback(void* context, uint32_t event) {

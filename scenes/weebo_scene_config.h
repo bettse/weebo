@@ -1,2 +1,4 @@
 ADD_SCENE(weebo, main_menu, MainMenu)
 ADD_SCENE(weebo, keys_missing, KeysMissing)
+ADD_SCENE(weebo, file_select, FileSelect)
+ADD_SCENE(weebo, saved_menu, SavedMenu)
