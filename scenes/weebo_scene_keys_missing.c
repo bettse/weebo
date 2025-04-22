@@ -14,8 +14,6 @@ void weebo_scene_keys_missing_on_enter(void* context) {
     // popup_set_text(popup, "words", 64, 36, AlignCenter, AlignTop);
     popup_set_context(weebo->popup, weebo);
     popup_set_callback(popup, weebo_scene_keys_missing_popup_callback);
-    popup_set_timeout(popup, 5 * 60 * 1000);
-    popup_enable_timeout(weebo->popup);
 
     view_dispatcher_switch_to_view(weebo->view_dispatcher, WeeboViewPopup);
 }
