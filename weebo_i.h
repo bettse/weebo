@@ -50,6 +50,10 @@ enum WeeboCustomEvent {
     WeeboCustomEventViewExit,
     WeeboCustomEventTextInputDone,
     WeeboCustomEventNumberInputDone,
+    // Card writing
+    WeeboCustomEventCardDetected,
+    WeeboCustomEventWriteSuccess,
+    WeeboCustomEventWrongCard,
 };
 
 typedef void (*WeeboLoadingCallback)(void* context, bool state);
