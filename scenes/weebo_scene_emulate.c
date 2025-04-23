@@ -15,6 +15,7 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
     uint8_t UID[8];
     uint8_t modified[NTAG215_SIZE];
     MfUltralightData* data = mf_ultralight_alloc();
+    nfc_device_copy_data(weebo->nfc_device, NfcProtocolMfUltralight, data);
 
     //stop listener
     FURI_LOG_D(TAG, "Stopping listener");
@@ -29,13 +30,15 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
     UID[7] = UID[3] ^ UID[4] ^ UID[5] ^ UID[6];
     memcpy(weebo->figure + NFC3D_UID_OFFSET, UID, 8);
     memcpy(data->iso14443_3a_data->uid, UID, 7);
+    FURI_LOG_D(TAG, "New UID: %02X%02X%02X%02X%02X%02X%02X%02X",
+               UID[0], UID[1], UID[2], UID[3], UID[4], UID[5], UID[6], UID[7]);
 
     //pack
     nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
 
     //copy data in
-    nfc_device_copy_data(weebo->nfc_device, NfcProtocolMfUltralight, data);
     for(size_t i = 0; i < 130; i++) {
+        FURI_LOG_D(TAG, "Copy page %d", i);
         memcpy(
             data->page[i].data, modified + i * MF_ULTRALIGHT_PAGE_SIZE, MF_ULTRALIGHT_PAGE_SIZE);
     }
