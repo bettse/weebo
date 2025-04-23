@@ -4,7 +4,7 @@ A flipper zero NTAG215 writer
 
 ![Demo Video](demo.mp4)
 
-** Put key_retail.bin into 'SD Card/apps_data/weebo/ **
+**Put key_retail.bin into 'SD Card/apps_data/weebo/**
 
 ## Todo
 
