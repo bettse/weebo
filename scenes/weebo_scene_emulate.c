@@ -17,12 +17,6 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
     MfUltralightData* data = mf_ultralight_alloc();
     nfc_device_copy_data(weebo->nfc_device, NfcProtocolMfUltralight, data);
 
-    //stop listener
-    FURI_LOG_D(TAG, "Stopping listener");
-    nfc_listener_stop(weebo->listener);
-    nfc_listener_free(weebo->listener);
-    weebo->listener = NULL;
-
     //random uid
     FURI_LOG_D(TAG, "Generating random UID");
     UID[0] = 0x04;
@@ -30,24 +24,12 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
     UID[7] = UID[3] ^ UID[4] ^ UID[5] ^ UID[6];
     memcpy(weebo->figure + NFC3D_UID_OFFSET, UID, 8);
     memcpy(data->iso14443_3a_data->uid, UID, 7);
-    FURI_LOG_D(
-        TAG,
-        "New UID: %02X%02X%02X%02X%02X%02X%02X%02X",
-        UID[0],
-        UID[1],
-        UID[2],
-        UID[3],
-        UID[4],
-        UID[5],
-        UID[6],
-        UID[7]);
 
     //pack
     nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
 
     //copy data in
     for(size_t i = 0; i < 130; i++) {
-        FURI_LOG_D(TAG, "Copy page %d", i);
         memcpy(
             data->page[i].data, modified + i * MF_ULTRALIGHT_PAGE_SIZE, MF_ULTRALIGHT_PAGE_SIZE);
     }
@@ -58,11 +40,6 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
 
     //set data
     nfc_device_set_data(weebo->nfc_device, NfcProtocolMfUltralight, data);
-
-    //start listener
-    FURI_LOG_D(TAG, "Starting listener");
-    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-    nfc_listener_start(weebo->listener, NULL, NULL);
 
     mf_ultralight_free(data);
 }
@@ -105,7 +82,19 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
     if(event.type == SceneManagerEventTypeCustom) {
         scene_manager_set_scene_state(weebo->scene_manager, WeeboSceneEmulate, event.event);
         if(event.event == GuiButtonTypeCenter) {
+            //stop listener
+            FURI_LOG_D(TAG, "Stopping listener");
+            nfc_listener_stop(weebo->listener);
+            nfc_listener_free(weebo->listener);
+            weebo->listener = NULL;
+
             weebo_scene_emulate_remix(weebo);
+            //start listener
+            FURI_LOG_D(TAG, "Starting listener");
+            const MfUltralightData* data =
+                nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
+            weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
+            nfc_listener_start(weebo->listener, NULL, NULL);
 
             consumed = true;
         }
