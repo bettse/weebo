@@ -85,13 +85,16 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
 
         MfUltralightError error;
+        MfUltralightPage page;
 
+        // You might think it odd that I'm doing this writing "by hand" and not using the flipper SDK, but this is for two reasons:
+        // 1. The flipper SDK doesn't write beyond user memory
+        // 2. I order the writes from least destructive to most destructive, so that if something goes wrong, recovery _might_ be possible
         do {
             // user data
             view_dispatcher_send_custom_event(
                 weebo->view_dispatcher, WeeboCustomEventWritingUserData);
             for(size_t i = userMemoryFirst; i <= userMemoryLast; i++) {
-                MfUltralightPage page;
                 memcpy(
                     page.data, modified + (i * MF_ULTRALIGHT_PAGE_SIZE), MF_ULTRALIGHT_PAGE_SIZE);
                 FURI_LOG_D(TAG, "Writing page %zu", i);
@@ -107,31 +110,71 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
                 break;
             }
 
-            UNUSED(PWD);
-            UNUSED(PACKRFUI);
-            UNUSED(CC);
-            UNUSED(CFG0);
-            UNUSED(CFG1);
-            UNUSED(DLB);
-            UNUSED(SLB);
             view_dispatcher_send_custom_event(
                 weebo->view_dispatcher, WeeboCustomEventWritingConfigData);
-            /*
             // pwd
-            memcpy(newdata->page[pwd].data, PWD, sizeof(PWD));
+
+            memcpy(page.data, PWD, sizeof(PWD));
+            error = mf_ultralight_poller_write_page(poller, pwd, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing PWD: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // pack
-            memcpy(newdata->page[pack].data, PACKRFUI, sizeof(PACKRFUI));
+            memcpy(page.data, PACKRFUI, sizeof(PACKRFUI));
+            error = mf_ultralight_poller_write_page(poller, pack, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing PACKRFUI: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // capability container
-            memcpy(newdata->page[capabilityContainer].data, CC, sizeof(CC));
+            memcpy(page.data, CC, sizeof(CC));
+            error = mf_ultralight_poller_write_page(poller, capabilityContainer, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing CC: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // cfg0
-            memcpy(newdata->page[cfg0].data, CFG0, sizeof(CFG0));
+            memcpy(page.data, CFG0, sizeof(CFG0));
+            error = mf_ultralight_poller_write_page(poller, cfg0, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing CFG0: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // cfg1
-            memcpy(newdata->page[cfg1].data, CFG1, sizeof(CFG1));
+            memcpy(page.data, CFG1, sizeof(CFG1));
+            error = mf_ultralight_poller_write_page(poller, cfg1, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing CFG1: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // dynamic lock bits
-            memcpy(newdata->page[dynamicLockBits].data, DLB, sizeof(DLB));
+            memcpy(page.data, DLB, sizeof(DLB));
+            error = mf_ultralight_poller_write_page(poller, dynamicLockBits, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing DLB: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
+
             // static lock bits
-            memcpy(newdata->page[staticLockBits].data, SLB, sizeof(SLB));
-            */
+            memcpy(page.data, SLB, sizeof(SLB));
+            error = mf_ultralight_poller_write_page(poller, staticLockBits, &page);
+            if(error != MfUltralightErrorNone) {
+                FURI_LOG_E(TAG, "Error writing SLB: %d", error);
+                ret = NfcCommandStop;
+                break;
+            }
         } while(false);
         ret = NfcCommandStop;
         view_dispatcher_send_custom_event(weebo->view_dispatcher, WeeboCustomEventWriteSuccess);
