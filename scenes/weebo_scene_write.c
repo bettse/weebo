@@ -74,15 +74,17 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         // 2. I order the writes from least destructive to most destructive, so that if something goes wrong, recovery _might_ be possible
         do {
             // user data
+            FURI_LOG_D(TAG, "Writing user data");
             view_dispatcher_send_custom_event(
                 weebo->view_dispatcher, WeeboCustomEventWritingUserData);
             for(size_t i = userMemoryFirst; i <= userMemoryLast; i++) {
                 memcpy(
                     page.data, modified + (i * MF_ULTRALIGHT_PAGE_SIZE), MF_ULTRALIGHT_PAGE_SIZE);
-                FURI_LOG_D(TAG, "Writing page %zu", i);
                 error = mf_ultralight_poller_write_page(poller, i, &page);
                 if(error != MfUltralightErrorNone) {
                     FURI_LOG_E(TAG, "Error writing page %zu: %d", i, error);
+                    view_dispatcher_send_custom_event(
+                        weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                     ret = NfcCommandStop;
                     break;
                 }
@@ -94,11 +96,14 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
 
             view_dispatcher_send_custom_event(
                 weebo->view_dispatcher, WeeboCustomEventWritingConfigData);
-            // pwd
+            FURI_LOG_D(TAG, "Writing config");
 
+            // pwd
             memcpy(page.data, PWD, sizeof(PWD));
             error = mf_ultralight_poller_write_page(poller, pwd, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing PWD: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -108,6 +113,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, PACKRFUI, sizeof(PACKRFUI));
             error = mf_ultralight_poller_write_page(poller, pack, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing PACKRFUI: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -117,6 +124,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, CC, sizeof(CC));
             error = mf_ultralight_poller_write_page(poller, capabilityContainer, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing CC: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -126,6 +135,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, CFG0, sizeof(CFG0));
             error = mf_ultralight_poller_write_page(poller, cfg0, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing CFG0: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -135,6 +146,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, CFG1, sizeof(CFG1));
             error = mf_ultralight_poller_write_page(poller, cfg1, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing CFG1: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -144,6 +157,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, DLB, sizeof(DLB));
             error = mf_ultralight_poller_write_page(poller, dynamicLockBits, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing DLB: %d", error);
                 ret = NfcCommandStop;
                 break;
@@ -153,6 +168,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             memcpy(page.data, SLB, sizeof(SLB));
             error = mf_ultralight_poller_write_page(poller, staticLockBits, &page);
             if(error != MfUltralightErrorNone) {
+                view_dispatcher_send_custom_event(
+                    weebo->view_dispatcher, WeeboCustomEventWriteFailure);
                 FURI_LOG_E(TAG, "Error writing SLB: %d", error);
                 ret = NfcCommandStop;
                 break;

@@ -59,6 +59,7 @@ enum WeeboCustomEvent {
     WeeboCustomEventWritingUserData,
     WeeboCustomEventWritingConfigData,
     WeeboCustomEventWriteSuccess,
+    WeeboCustomEventWriteFailure,
     WeeboCustomEventWrongCard,
 };
 
