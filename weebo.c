@@ -36,7 +36,7 @@ bool weebo_load_key_retail(Weebo* weebo) {
             break;
         }
 
-        memcpy(&weebo->amiiboKeys, buffer, bytes_read);
+        memcpy(&weebo->keys, buffer, bytes_read);
 
         // TODO: compare SHA1
         parsed = true;
@@ -94,7 +94,7 @@ bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
                 buffer + i * MF_ULTRALIGHT_PAGE_SIZE, data->page[i].data, MF_ULTRALIGHT_PAGE_SIZE);
         }
 
-        if(!nfc3d_amiibo_unpack(&weebo->amiiboKeys, buffer, weebo->figure)) {
+        if(!nfc3d_amiibo_unpack(&weebo->keys, buffer, weebo->figure)) {
             FURI_LOG_E(TAG, "Failed to unpack");
             break;
         }

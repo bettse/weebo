@@ -94,7 +94,7 @@ struct Weebo {
     char file_name[WEEBO_FILE_NAME_MAX_LENGTH + 1];
 
     bool keys_loaded;
-    nfc3d_amiibo_keys amiiboKeys;
+    nfc3d_amiibo_keys keys;
 
     WeeboLoadingCallback loading_cb;
     void* loading_cb_ctx;

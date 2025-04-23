@@ -20,9 +20,11 @@ void weebo_scene_main_menu_on_enter(void* context) {
     submenu_add_item(
         submenu, "Saved", SubmenuIndexSaved, weebo_scene_main_menu_submenu_callback, weebo);
     submenu_add_item(
-        submenu, "Acknowledgements", SubmenuIndexAcknowledgements, weebo_scene_main_menu_submenu_callback, weebo);
-
-
+        submenu,
+        "Acknowledgements",
+        SubmenuIndexAcknowledgements,
+        weebo_scene_main_menu_submenu_callback,
+        weebo);
 
     submenu_set_selected_item(
         submenu, scene_manager_get_scene_state(weebo->scene_manager, WeeboSceneMainMenu));
@@ -39,7 +41,7 @@ bool weebo_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneFileSelect);
             consumed = true;
         } else if(event.event == SubmenuIndexAcknowledgements) {
-          scene_manager_next_scene(weebo->scene_manager, WeeboSceneAcknowledgements);
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneAcknowledgements);
             consumed = true;
         }
     }

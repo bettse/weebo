@@ -25,7 +25,7 @@ void weebo_remix(Weebo* weebo) {
     memcpy(data->iso14443_3a_data->uid, UID, 7);
 
     //pack
-    nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
+    nfc3d_amiibo_pack(&weebo->keys, weebo->figure, modified);
 
     //copy data in
     for(size_t i = 0; i < 130; i++) {
