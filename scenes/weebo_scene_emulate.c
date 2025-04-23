@@ -53,26 +53,49 @@ void weebo_scene_emulate_widget_callback(GuiButtonType result, InputType type, v
     }
 }
 
+void weebo_scene_emulate_draw_screen(Weebo* weebo) {
+    Widget* widget = weebo->widget;
+    FuriString* info_str = furi_string_alloc();
+    FuriString* uid_str = furi_string_alloc();
+    const MfUltralightData* data = nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
+
+    furi_string_cat_printf(info_str, "Emulating");
+    furi_string_cat_printf(
+        uid_str,
+        "%02X%02X%02X%02X%02X%02X%02X",
+        data->iso14443_3a_data->uid[0],
+        data->iso14443_3a_data->uid[1],
+        data->iso14443_3a_data->uid[2],
+        data->iso14443_3a_data->uid[3],
+        data->iso14443_3a_data->uid[4],
+        data->iso14443_3a_data->uid[5],
+        data->iso14443_3a_data->uid[6]);
+
+    widget_reset(widget);
+    widget_add_string_element(
+        widget, 64, 5, AlignCenter, AlignCenter, FontSecondary, furi_string_get_cstr(info_str));
+    widget_add_string_element(
+        widget, 64, 25, AlignCenter, AlignCenter, FontSecondary, furi_string_get_cstr(uid_str));
+
+    widget_add_button_element(
+        widget, GuiButtonTypeCenter, "Remix", weebo_scene_emulate_widget_callback, weebo);
+
+    furi_string_free(info_str);
+    furi_string_free(uid_str);
+
+    view_dispatcher_switch_to_view(weebo->view_dispatcher, WeeboViewWidget);
+}
+
 void weebo_scene_emulate_on_enter(void* context) {
     Weebo* weebo = context;
-    Widget* widget = weebo->widget;
 
     nfc_device_load(weebo->nfc_device, furi_string_get_cstr(weebo->load_path));
     const MfUltralightData* data = nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
     weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
     nfc_listener_start(weebo->listener, NULL, NULL);
 
-    FuriString* info_str = furi_string_alloc();
-    furi_string_cat_printf(info_str, "Emulating");
-    widget_add_string_element(
-        widget, 64, 5, AlignCenter, AlignCenter, FontSecondary, furi_string_get_cstr(info_str));
-
-    widget_add_button_element(
-        widget, GuiButtonTypeCenter, "Remix", weebo_scene_emulate_widget_callback, weebo);
-
-    furi_string_free(info_str);
+    weebo_scene_emulate_draw_screen(weebo);
     weebo_blink_start(weebo);
-    view_dispatcher_switch_to_view(weebo->view_dispatcher, WeeboViewWidget);
 }
 
 bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
@@ -95,6 +118,8 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
                 nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
             weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
             nfc_listener_start(weebo->listener, NULL, NULL);
+
+            weebo_scene_emulate_draw_screen(weebo);
 
             consumed = true;
         }
