@@ -60,19 +60,8 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         }
         view_dispatcher_send_custom_event(weebo->view_dispatcher, WeeboCustomEventCardDetected);
 
-        FURI_LOG_D(
-            TAG,
-            "UID: %02X%02X%02X%02X%02X%02X",
-            data->iso14443_3a_data->uid[0],
-            data->iso14443_3a_data->uid[1],
-            data->iso14443_3a_data->uid[2],
-            data->iso14443_3a_data->uid[3],
-            data->iso14443_3a_data->uid[4],
-            data->iso14443_3a_data->uid[5]);
-
         uint8_t PWD[4];
         weebo_scene_write_calculate_pwd(data->iso14443_3a_data->uid, PWD);
-        FURI_LOG_D(TAG, "PWD: %02X%02X%02X%02X", PWD[0], PWD[1], PWD[2], PWD[3]);
 
         for(size_t p = 0; p < 2; p++) {
             for(size_t i = 0; i < MF_ULTRALIGHT_PAGE_SIZE; i++) {

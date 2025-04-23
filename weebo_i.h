@@ -23,8 +23,10 @@
 
 #include <lib/nfc/nfc.h>
 #include <nfc/nfc_poller.h>
+#include <nfc/nfc_listener.h>
 #include <nfc/nfc_device.h>
 #include <nfc/protocols/mf_ultralight/mf_ultralight_poller.h>
+#include <nfc/protocols/mf_ultralight/mf_ultralight_listener.h>
 
 #include <lib/toolbox/stream/stream.h>
 #include <lib/toolbox/stream/file_stream.h>
@@ -83,6 +85,7 @@ struct Weebo {
 
     Nfc* nfc;
     NfcPoller* poller;
+    NfcListener* listener;
     NfcDevice* nfc_device;
 
     FuriString* load_path;

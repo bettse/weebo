@@ -4,6 +4,7 @@
 
 enum SubmenuIndex {
     SubmenuIndexWrite = 0,
+    SubmenuIndexEmulate,
 };
 
 void weebo_scene_saved_menu_submenu_callback(void* context, uint32_t index) {
@@ -18,6 +19,8 @@ void weebo_scene_saved_menu_on_enter(void* context) {
 
     submenu_add_item(
         submenu, "Write", SubmenuIndexWrite, weebo_scene_saved_menu_submenu_callback, weebo);
+    submenu_add_item(
+        submenu, "Emulate", SubmenuIndexEmulate, weebo_scene_saved_menu_submenu_callback, weebo);
 
     submenu_set_selected_item(
         submenu, scene_manager_get_scene_state(weebo->scene_manager, WeeboSceneSavedMenu));
@@ -33,7 +36,13 @@ bool weebo_scene_saved_menu_on_event(void* context, SceneManagerEvent event) {
         if(event.event == SubmenuIndexWrite) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneWrite);
             consumed = true;
+        } else if(event.event == SubmenuIndexEmulate) {
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneEmulate);
+            consumed = true;
         }
+    } else if(event.type == SceneManagerEventTypeBack) {
+        consumed = scene_manager_search_and_switch_to_previous_scene(
+            weebo->scene_manager, WeeboSceneMainMenu);
     }
 
     return consumed;
