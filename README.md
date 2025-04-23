@@ -1,6 +1,6 @@
 # Weebo
 
-A flipper zero NTAG215 parser, writer, emulator, remixer, dulicator.
+A flipper zero NTAG215 parser, writer, emulator, remixer, duplicator.
 
 ![Demo Video](demo.mp4)
 
