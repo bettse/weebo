@@ -23,13 +23,6 @@ enum NTAG215Pages {
     total = 135
 };
 
-void weebo_scene_write_calculate_pwd(uint8_t* uid, uint8_t* pwd) {
-    pwd[0] = uid[1] ^ uid[3] ^ 0xAA;
-    pwd[1] = uid[2] ^ uid[4] ^ 0x55;
-    pwd[2] = uid[3] ^ uid[5] ^ 0xAA;
-    pwd[3] = uid[4] ^ uid[6] ^ 0x55;
-}
-
 NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* context) {
     furi_assert(event.protocol == NfcProtocolMfUltralight);
     Weebo* weebo = context;
@@ -61,7 +54,7 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         view_dispatcher_send_custom_event(weebo->view_dispatcher, WeeboCustomEventCardDetected);
 
         uint8_t PWD[4];
-        weebo_scene_write_calculate_pwd(data->iso14443_3a_data->uid, PWD);
+        weebo_calculate_pwd(data->iso14443_3a_data->uid, PWD);
 
         for(size_t p = 0; p < 2; p++) {
             for(size_t i = 0; i < MF_ULTRALIGHT_PAGE_SIZE; i++) {

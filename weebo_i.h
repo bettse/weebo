@@ -37,6 +37,7 @@
 #include <amiibo.h>
 
 #include "weebo.h"
+#include "weebo_common.h"
 #include "scenes/weebo_scene.h"
 
 #define WEEBO_TEXT_STORE_SIZE      128

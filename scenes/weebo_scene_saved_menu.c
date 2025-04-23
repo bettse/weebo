@@ -50,7 +50,8 @@ bool weebo_scene_saved_menu_on_event(void* context, SceneManagerEvent event) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneEmulate);
             consumed = true;
         } else if(event.event == SubmenuIndexDuplicate) {
-            //scene_manager_next_scene(weebo->scene_manager, WeeboSceneDuplicate);
+            weebo_remix(weebo);
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneSaveName);
             consumed = true;
         } else if(event.event == SubmenuIndexInfo) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneInfo);

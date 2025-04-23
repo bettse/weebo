@@ -5,6 +5,8 @@
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 #define FIGURE_ID_LIST            APP_ASSETS_PATH("figure_ids.nfc")
 #define UNPACKED_FIGURE_ID        0x1dc
+#define NFC_APP_EXTENSION         ".nfc"
+#define NFC_APP_PATH_PREFIX       "/ext/nfc"
 
 static const char* nfc_resources_header = "Flipper NFC resources";
 static const uint32_t nfc_resources_file_version = 1;
@@ -80,10 +82,7 @@ bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
 
         uint8_t* uid = data->iso14443_3a_data->uid;
         uint8_t pwd[4];
-        pwd[0] = uid[1] ^ uid[3] ^ 0xAA;
-        pwd[1] = uid[2] ^ uid[4] ^ 0x55;
-        pwd[2] = uid[3] ^ uid[5] ^ 0xAA;
-        pwd[3] = uid[4] ^ uid[6] ^ 0x55;
+        weebo_calculate_pwd(uid, pwd);
 
         if(memcmp(data->page[133].data, pwd, sizeof(pwd)) != 0) {
             furi_string_printf(reason, "Wrong password");
@@ -178,12 +177,12 @@ bool weebo_file_select(Weebo* weebo) {
     } else if(storage_dir_exists(weebo->storage, "/ext/nfc/amiibos")) {
         weebo_app_folder = furi_string_alloc_set("/ext/nfc/amiibos");
     } else {
-        weebo_app_folder = furi_string_alloc_set("/ext/nfc");
+        weebo_app_folder = furi_string_alloc_set(NFC_APP_PATH_PREFIX);
     }
 
     DialogsFileBrowserOptions browser_options;
-    dialog_file_browser_set_basic_options(&browser_options, ".nfc", &I_Nfc_10px);
-    browser_options.base_path = STORAGE_APP_DATA_PATH_PREFIX;
+    dialog_file_browser_set_basic_options(&browser_options, NFC_APP_EXTENSION, &I_Nfc_10px);
+    browser_options.base_path = NFC_APP_PATH_PREFIX;
 
     res = dialog_file_browser_show(
         weebo->dialogs, weebo->load_path, weebo_app_folder, &browser_options);
