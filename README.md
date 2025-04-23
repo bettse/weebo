@@ -10,4 +10,3 @@ A flipper zero NTAG215 writer
 
  - Parse details of Flipper NFC files
  - Save changes to Flipper NFC files
- - Remixer
