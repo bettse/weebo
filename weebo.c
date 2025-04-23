@@ -44,29 +44,50 @@ bool weebo_load_key_retail(Weebo* weebo) {
 
 bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
     bool parsed = false;
+    FuriString* reason = furi_string_alloc_set("Couldn't load file");
     uint8_t buffer[NTAG215_SIZE];
     memset(buffer, 0, sizeof(buffer));
-
-    Storage* storage = furi_record_open(RECORD_STORAGE);
-    Stream* stream = file_stream_alloc(storage);
 
     if(weebo->loading_cb) {
         weebo->loading_cb(weebo->loading_cb_ctx, true);
     }
 
-    // TODO: reject if the selected file is key_retail
     do {
-        bool opened =
-            file_stream_open(stream, furi_string_get_cstr(path), FSAM_READ, FSOM_OPEN_EXISTING);
-        if(!opened) {
-            FURI_LOG_E(TAG, "Failed to open file");
+        NfcDevice* nfc_device = weebo->nfc_device;
+        if(!nfc_device_load(nfc_device, furi_string_get_cstr(path))) break;
+
+        NfcProtocol protocol = nfc_device_get_protocol(nfc_device);
+        if(protocol != NfcProtocolMfUltralight) {
+            furi_string_printf(reason, "Not Ultralight protocol");
             break;
         }
 
-        size_t bytes_read = stream_read(stream, buffer, sizeof(buffer));
-        if(bytes_read != sizeof(buffer)) {
-            FURI_LOG_E(TAG, "Insufficient data");
+        const MfUltralightData* data = nfc_device_get_data(nfc_device, NfcProtocolMfUltralight);
+        if(data->type != MfUltralightTypeNTAG215) {
+            furi_string_printf(reason, "Not NTAG215");
             break;
+        }
+
+        if(!mf_ultralight_is_all_data_read(data)) {
+            furi_string_printf(reason, "Incomplete data");
+            break;
+        }
+
+        uint8_t* uid = data->iso14443_3a_data->uid;
+        uint8_t pwd[4];
+        pwd[0] = uid[1] ^ uid[3] ^ 0xAA;
+        pwd[1] = uid[2] ^ uid[4] ^ 0x55;
+        pwd[2] = uid[3] ^ uid[5] ^ 0xAA;
+        pwd[3] = uid[4] ^ uid[6] ^ 0x55;
+
+        if(memcmp(data->page[133].data, pwd, sizeof(pwd)) != 0) {
+            furi_string_printf(reason, "Wrong password");
+            break;
+        }
+
+        for(size_t i = 0; i < 135; i++) {
+            memcpy(
+                buffer + i * MF_ULTRALIGHT_PAGE_SIZE, data->page[i].data, MF_ULTRALIGHT_PAGE_SIZE);
         }
 
         if(!nfc3d_amiibo_unpack(&weebo->amiiboKeys, buffer, weebo->figure)) {
@@ -77,17 +98,15 @@ bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
         parsed = true;
     } while(false);
 
-    file_stream_close(stream);
-    furi_record_close(RECORD_STORAGE);
-
     if(weebo->loading_cb) {
         weebo->loading_cb(weebo->loading_cb_ctx, false);
     }
 
     if((!parsed) && (show_dialog)) {
-        dialog_message_show_storage_error(weebo->dialogs, "Can not parse\nfile");
+        dialog_message_show_storage_error(weebo->dialogs, furi_string_get_cstr(reason));
     }
 
+    furi_string_free(reason);
     return parsed;
 }
 
@@ -102,10 +121,22 @@ bool weebo_file_select(Weebo* weebo) {
     furi_assert(weebo);
     bool res = false;
 
-    FuriString* weebo_app_folder = furi_string_alloc_set(STORAGE_APP_DATA_PATH_PREFIX);
+    FuriString* weebo_app_folder;
+
+    if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibo")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibo");
+    } else if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibos")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibos");
+    } else if(storage_dir_exists(weebo->storage, "/ext/nfc/amiibo")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/amiibo");
+    } else if(storage_dir_exists(weebo->storage, "/ext/nfc/amiibos")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/amiibos");
+    } else {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc");
+    }
 
     DialogsFileBrowserOptions browser_options;
-    dialog_file_browser_set_basic_options(&browser_options, ".bin", &I_Nfc_10px);
+    dialog_file_browser_set_basic_options(&browser_options, ".nfc", &I_Nfc_10px);
     browser_options.base_path = STORAGE_APP_DATA_PATH_PREFIX;
 
     res = dialog_file_browser_show(

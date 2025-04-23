@@ -24,6 +24,7 @@
 #include <lib/nfc/nfc.h>
 #include <nfc/nfc_poller.h>
 #include <nfc/nfc_device.h>
+#include <nfc/protocols/mf_ultralight/mf_ultralight_poller.h>
 
 #include <lib/toolbox/stream/stream.h>
 #include <lib/toolbox/stream/file_stream.h>
