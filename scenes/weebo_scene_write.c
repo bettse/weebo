@@ -219,6 +219,9 @@ bool weebo_scene_write_on_event(void* context, SceneManagerEvent event) {
         } else if(event.event == WeeboCustomEventWrongCard) {
             popup_set_text(weebo->popup, "Wrong card", 64, 36, AlignCenter, AlignTop);
             consumed = true;
+        } else if(event.event == WeeboCustomEventWriteFailure) {
+            popup_set_text(weebo->popup, "Write failure", 64, 36, AlignCenter, AlignTop);
+            consumed = true;
         }
     }
 
