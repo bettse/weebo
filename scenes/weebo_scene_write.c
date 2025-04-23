@@ -101,16 +101,6 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             newdata->page[i / MF_ULTRALIGHT_PAGE_SIZE].data[i % MF_ULTRALIGHT_PAGE_SIZE] =
                 modified[i];
         }
-
-        UNUSED(PWD);
-        UNUSED(PACKRFUI);
-        UNUSED(CC);
-        UNUSED(CFG0);
-        UNUSED(CFG1);
-        UNUSED(DLB);
-        UNUSED(SLB);
-
-        /*
         // pwd
         memcpy(newdata->page[pwd].data, PWD, sizeof(PWD));
         // pack
@@ -125,7 +115,6 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         memcpy(newdata->page[dynamicLockBits].data, DLB, sizeof(DLB));
         // static lock bits
         memcpy(newdata->page[staticLockBits].data, SLB, sizeof(SLB));
-        */
 
         nfc_device_set_data(weebo->nfc_device, NfcProtocolMfUltralight, newdata);
 
@@ -151,8 +140,6 @@ void weebo_scene_write_on_enter(void* context) {
     Popup* popup = weebo->popup;
 
     popup_set_header(popup, "Present NTAG215", 58, 28, AlignCenter, AlignCenter);
-    //popup_set_icon(popup, 0, 3, &I_RFIDDolphinReceive_97x61);
-    // popup_set_text(popup, "words", 64, 36, AlignCenter, AlignTop);
 
     weebo->poller = nfc_poller_alloc(weebo->nfc, NfcProtocolMfUltralight);
     nfc_poller_start(weebo->poller, weebo_scene_write_poller_callback, weebo);
