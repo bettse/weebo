@@ -30,8 +30,17 @@ void weebo_scene_emulate_remix(Weebo* weebo) {
     UID[7] = UID[3] ^ UID[4] ^ UID[5] ^ UID[6];
     memcpy(weebo->figure + NFC3D_UID_OFFSET, UID, 8);
     memcpy(data->iso14443_3a_data->uid, UID, 7);
-    FURI_LOG_D(TAG, "New UID: %02X%02X%02X%02X%02X%02X%02X%02X",
-               UID[0], UID[1], UID[2], UID[3], UID[4], UID[5], UID[6], UID[7]);
+    FURI_LOG_D(
+        TAG,
+        "New UID: %02X%02X%02X%02X%02X%02X%02X%02X",
+        UID[0],
+        UID[1],
+        UID[2],
+        UID[3],
+        UID[4],
+        UID[5],
+        UID[6],
+        UID[7]);
 
     //pack
     nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);

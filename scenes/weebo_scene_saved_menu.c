@@ -5,6 +5,8 @@
 enum SubmenuIndex {
     SubmenuIndexWrite = 0,
     SubmenuIndexEmulate,
+    SubmenuIndexDuplicate,
+    SubmenuIndexInfo,
 };
 
 void weebo_scene_saved_menu_submenu_callback(void* context, uint32_t index) {
@@ -21,6 +23,14 @@ void weebo_scene_saved_menu_on_enter(void* context) {
         submenu, "Write", SubmenuIndexWrite, weebo_scene_saved_menu_submenu_callback, weebo);
     submenu_add_item(
         submenu, "Emulate", SubmenuIndexEmulate, weebo_scene_saved_menu_submenu_callback, weebo);
+    submenu_add_item(
+        submenu,
+        "Duplicate",
+        SubmenuIndexDuplicate,
+        weebo_scene_saved_menu_submenu_callback,
+        weebo);
+    submenu_add_item(
+        submenu, "Info", SubmenuIndexInfo, weebo_scene_saved_menu_submenu_callback, weebo);
 
     submenu_set_selected_item(
         submenu, scene_manager_get_scene_state(weebo->scene_manager, WeeboSceneSavedMenu));
@@ -38,6 +48,12 @@ bool weebo_scene_saved_menu_on_event(void* context, SceneManagerEvent event) {
             consumed = true;
         } else if(event.event == SubmenuIndexEmulate) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneEmulate);
+            consumed = true;
+        } else if(event.event == SubmenuIndexDuplicate) {
+            //scene_manager_next_scene(weebo->scene_manager, WeeboSceneDuplicate);
+            consumed = true;
+        } else if(event.event == SubmenuIndexInfo) {
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneInfo);
             consumed = true;
         }
     } else if(event.type == SceneManagerEventTypeBack) {

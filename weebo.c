@@ -3,6 +3,11 @@
 #define TAG "weebo"
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
+#define FIGURE_ID_LIST            APP_ASSETS_PATH("figure_ids.nfc")
+#define UNPACKED_FIGURE_ID        0x1dc
+
+static const char* nfc_resources_header = "Flipper NFC resources";
+static const uint32_t nfc_resources_file_version = 1;
 
 bool weebo_load_key_retail(Weebo* weebo) {
     FuriString* path = furi_string_alloc();
@@ -107,6 +112,47 @@ bool weebo_load_figure(Weebo* weebo, FuriString* path, bool show_dialog) {
     }
 
     furi_string_free(reason);
+    return parsed;
+}
+
+static bool
+    weebo_search_data(Storage* storage, const char* file_name, FuriString* key, FuriString* data) {
+    bool parsed = false;
+    FlipperFormat* file = flipper_format_file_alloc(storage);
+    FuriString* temp_str;
+    temp_str = furi_string_alloc();
+
+    do {
+        // Open file
+        if(!flipper_format_file_open_existing(file, file_name)) break;
+        // Read file header and version
+        uint32_t version = 0;
+        if(!flipper_format_read_header(file, temp_str, &version)) break;
+        if(furi_string_cmp_str(temp_str, nfc_resources_header) ||
+           (version != nfc_resources_file_version))
+            break;
+        if(!flipper_format_read_string(file, furi_string_get_cstr(key), data)) break;
+        parsed = true;
+    } while(false);
+
+    furi_string_free(temp_str);
+    flipper_format_free(file);
+    return parsed;
+}
+
+bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
+    bool parsed = false;
+
+    uint16_t id = 0;
+    id |= weebo->figure[UNPACKED_FIGURE_ID + 0] << 8;
+    id |= weebo->figure[UNPACKED_FIGURE_ID + 1] << 0;
+    FURI_LOG_D(TAG, "id = %04x", id);
+
+    FuriString* key = furi_string_alloc_printf("%04x", id);
+    if(weebo_search_data(weebo->storage, FIGURE_ID_LIST, key, name)) {
+        parsed = true;
+    }
+    furi_string_free(key);
     return parsed;
 }
 

@@ -3,7 +3,7 @@
 #define TAG "SceneMainMenu"
 
 enum SubmenuIndex {
-    SubmenuIndexFileSaved= 0,
+    SubmenuIndexFileSaved = 0,
 };
 
 void weebo_scene_main_menu_submenu_callback(void* context, uint32_t index) {

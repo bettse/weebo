@@ -20,5 +20,5 @@ App(
             name="amiitool",
         ),
     ],
-
+    fap_file_assets="assets",
 )
