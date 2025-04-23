@@ -3,7 +3,7 @@
 #define TAG "SceneMainMenu"
 
 enum SubmenuIndex {
-    SubmenuIndexFileSelect = 0,
+    SubmenuIndexFileSaved= 0,
 };
 
 void weebo_scene_main_menu_submenu_callback(void* context, uint32_t index) {
@@ -17,7 +17,7 @@ void weebo_scene_main_menu_on_enter(void* context) {
     submenu_reset(submenu);
 
     submenu_add_item(
-        submenu, "Select", SubmenuIndexFileSelect, weebo_scene_main_menu_submenu_callback, weebo);
+        submenu, "Saved", SubmenuIndexFileSaved, weebo_scene_main_menu_submenu_callback, weebo);
 
     submenu_set_selected_item(
         submenu, scene_manager_get_scene_state(weebo->scene_manager, WeeboSceneMainMenu));
@@ -30,7 +30,7 @@ bool weebo_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
 
     if(event.type == SceneManagerEventTypeCustom) {
         scene_manager_set_scene_state(weebo->scene_manager, WeeboSceneMainMenu, event.event);
-        if(event.event == SubmenuIndexFileSelect) {
+        if(event.event == SubmenuIndexFileSaved) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneFileSelect);
             consumed = true;
         }
