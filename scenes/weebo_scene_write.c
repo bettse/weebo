@@ -70,6 +70,17 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             data->iso14443_3a_data->uid[4],
             data->iso14443_3a_data->uid[5]);
 
+        /*
+        MfUltralightAuth* mf_ul_auth;
+        mf_ul_auth = mf_ultralight_auth_alloc();
+        mf_ultralight_generate_amiibo_pass(
+            mf_ul_auth, data->iso14443_3a_data->uid, data->iso14443_3a_data->uid_len);
+        mf_ultralight_auth_free(weebo->mf_ul_auth);
+        */
+        uint8_t PWD[4];
+        weebo_scene_write_calculate_pwd(data->iso14443_3a_data->uid, PWD);
+        FURI_LOG_D(TAG, "PWD: %02X%02X%02X%02X", PWD[0], PWD[1], PWD[2], PWD[3]);
+
         for(size_t p = 0; p < 2; p++) {
             for(size_t i = 0; i < MF_ULTRALIGHT_PAGE_SIZE; i++) {
                 weebo->figure[NFC3D_UID_OFFSET + p * MF_ULTRALIGHT_PAGE_SIZE + i] =
@@ -79,17 +90,6 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
 
         uint8_t modified[NTAG215_SIZE];
         nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
-        FURI_LOG_D(TAG, "Re-packed");
-
-        /*
-        MfUltralightAuth* mf_ul_auth;
-        mf_ul_auth = mf_ultralight_auth_alloc();
-        mf_ultralight_generate_amiibo_pass(
-            mf_ul_auth, data->iso14443_3a_data->uid, data->iso14443_3a_data->uid_len);
-        */
-        uint8_t PWD[4];
-        weebo_scene_write_calculate_pwd(data->iso14443_3a_data->uid, PWD);
-        FURI_LOG_D(TAG, "PWD: %02X%02X%02X%02X", PWD[0], PWD[1], PWD[2], PWD[3]);
 
         MfUltralightData* newdata = mf_ultralight_alloc();
         nfc_device_copy_data(weebo->nfc_device, NfcProtocolMfUltralight, newdata);
@@ -130,7 +130,6 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         nfc_device_set_data(weebo->nfc_device, NfcProtocolMfUltralight, newdata);
 
         mf_ultralight_free(newdata);
-        //mf_ultralight_auth_free(weebo->mf_ul_auth);
     } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeRequestWriteData) {
         // NOTE: Consider saving the first 2 pages of the data (UID + BCC) and then doing all the calculations and setting up the data in this block.
         mf_ultralight_event->data->write_data =
@@ -175,7 +174,7 @@ bool weebo_scene_write_on_event(void* context, SceneManagerEvent event) {
         } else if(event.event == WeeboCustomEventWriteSuccess) {
             popup_set_text(weebo->popup, "Write success", 64, 36, AlignCenter, AlignTop);
             consumed = true;
-            // TODO: push to new scene
+            scene_manager_next_scene(weebo->scene_manager, WeeboSceneWriteCardSuccess);
         } else if(event.event == WeeboCustomEventWrongCard) {
             popup_set_text(weebo->popup, "Wrong card", 64, 36, AlignCenter, AlignTop);
             consumed = true;
