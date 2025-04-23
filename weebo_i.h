@@ -52,6 +52,8 @@ enum WeeboCustomEvent {
     WeeboCustomEventNumberInputDone,
     // Card writing
     WeeboCustomEventCardDetected,
+    WeeboCustomEventWritingUserData,
+    WeeboCustomEventWritingConfigData,
     WeeboCustomEventWriteSuccess,
     WeeboCustomEventWrongCard,
 };

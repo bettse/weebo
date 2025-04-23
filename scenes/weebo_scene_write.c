@@ -36,10 +36,10 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
     NfcCommand ret = NfcCommandContinue;
 
     const MfUltralightPollerEvent* mf_ultralight_event = event.event_data;
+    MfUltralightPoller* poller = event.instance;
 
     if(mf_ultralight_event->type == MfUltralightPollerEventTypeRequestMode) {
-        // This is called after the successful read, so we don't need to do anything special
-        mf_ultralight_event->data->poller_mode = MfUltralightPollerModeWrite;
+        // no-op
     } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeAuthRequest) {
         mf_ultralight_event->data->auth_context.skip_auth = true;
     } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeReadSuccess) {
@@ -70,13 +70,6 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
             data->iso14443_3a_data->uid[4],
             data->iso14443_3a_data->uid[5]);
 
-        /*
-        MfUltralightAuth* mf_ul_auth;
-        mf_ul_auth = mf_ultralight_auth_alloc();
-        mf_ultralight_generate_amiibo_pass(
-            mf_ul_auth, data->iso14443_3a_data->uid, data->iso14443_3a_data->uid_len);
-        mf_ultralight_auth_free(weebo->mf_ul_auth);
-        */
         uint8_t PWD[4];
         weebo_scene_write_calculate_pwd(data->iso14443_3a_data->uid, PWD);
         FURI_LOG_D(TAG, "PWD: %02X%02X%02X%02X", PWD[0], PWD[1], PWD[2], PWD[3]);
@@ -91,44 +84,57 @@ NfcCommand weebo_scene_write_poller_callback(NfcGenericEvent event, void* contex
         uint8_t modified[NTAG215_SIZE];
         nfc3d_amiibo_pack(&weebo->amiiboKeys, weebo->figure, modified);
 
-        MfUltralightData* newdata = mf_ultralight_alloc();
-        nfc_device_copy_data(weebo->nfc_device, NfcProtocolMfUltralight, newdata);
+        MfUltralightError error;
 
-        // If I were writing these by hand, I'd order them to do the least damage first so they can be re-run
+        do {
+            // user data
+            view_dispatcher_send_custom_event(
+                weebo->view_dispatcher, WeeboCustomEventWritingUserData);
+            for(size_t i = userMemoryFirst; i <= userMemoryLast; i++) {
+                MfUltralightPage page;
+                memcpy(
+                    page.data, modified + (i * MF_ULTRALIGHT_PAGE_SIZE), MF_ULTRALIGHT_PAGE_SIZE);
+                FURI_LOG_D(TAG, "Writing page %zu", i);
+                error = mf_ultralight_poller_write_page(poller, i, &page);
+                if(error != MfUltralightErrorNone) {
+                    FURI_LOG_E(TAG, "Error writing page %zu: %d", i, error);
+                    ret = NfcCommandStop;
+                    break;
+                }
+            }
+            if(error != MfUltralightErrorNone) {
+                ret = NfcCommandStop;
+                break;
+            }
 
-        // user data
-        for(size_t i = userMemoryFirst; i <= userMemoryLast; i++) {
-            newdata->page[i / MF_ULTRALIGHT_PAGE_SIZE].data[i % MF_ULTRALIGHT_PAGE_SIZE] =
-                modified[i];
-        }
-        // pwd
-        memcpy(newdata->page[pwd].data, PWD, sizeof(PWD));
-        // pack
-        memcpy(newdata->page[pack].data, PACKRFUI, sizeof(PACKRFUI));
-        // capability container
-        memcpy(newdata->page[capabilityContainer].data, CC, sizeof(CC));
-        // cfg0
-        memcpy(newdata->page[cfg0].data, CFG0, sizeof(CFG0));
-        // cfg1
-        memcpy(newdata->page[cfg1].data, CFG1, sizeof(CFG1));
-        // dynamic lock bits
-        memcpy(newdata->page[dynamicLockBits].data, DLB, sizeof(DLB));
-        // static lock bits
-        memcpy(newdata->page[staticLockBits].data, SLB, sizeof(SLB));
-
-        nfc_device_set_data(weebo->nfc_device, NfcProtocolMfUltralight, newdata);
-
-        mf_ultralight_free(newdata);
-    } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeRequestWriteData) {
-        // NOTE: Consider saving the first 2 pages of the data (UID + BCC) and then doing all the calculations and setting up the data in this block.
-        mf_ultralight_event->data->write_data =
-            nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-
-    } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeWriteSuccess) {
+            UNUSED(PWD);
+            UNUSED(PACKRFUI);
+            UNUSED(CC);
+            UNUSED(CFG0);
+            UNUSED(CFG1);
+            UNUSED(DLB);
+            UNUSED(SLB);
+            view_dispatcher_send_custom_event(
+                weebo->view_dispatcher, WeeboCustomEventWritingConfigData);
+            /*
+            // pwd
+            memcpy(newdata->page[pwd].data, PWD, sizeof(PWD));
+            // pack
+            memcpy(newdata->page[pack].data, PACKRFUI, sizeof(PACKRFUI));
+            // capability container
+            memcpy(newdata->page[capabilityContainer].data, CC, sizeof(CC));
+            // cfg0
+            memcpy(newdata->page[cfg0].data, CFG0, sizeof(CFG0));
+            // cfg1
+            memcpy(newdata->page[cfg1].data, CFG1, sizeof(CFG1));
+            // dynamic lock bits
+            memcpy(newdata->page[dynamicLockBits].data, DLB, sizeof(DLB));
+            // static lock bits
+            memcpy(newdata->page[staticLockBits].data, SLB, sizeof(SLB));
+            */
+        } while(false);
+        ret = NfcCommandStop;
         view_dispatcher_send_custom_event(weebo->view_dispatcher, WeeboCustomEventWriteSuccess);
-        ret = NfcCommandStop;
-    } else if(mf_ultralight_event->type == MfUltralightPollerEventTypeWriteFail) {
-        ret = NfcCommandStop;
     } else {
         FURI_LOG_D(TAG, "Unhandled event type: %d", mf_ultralight_event->type);
     }
@@ -157,6 +163,12 @@ bool weebo_scene_write_on_event(void* context, SceneManagerEvent event) {
         scene_manager_set_scene_state(weebo->scene_manager, WeeboSceneWrite, event.event);
         if(event.event == WeeboCustomEventCardDetected) {
             popup_set_text(weebo->popup, "Card detected", 64, 36, AlignCenter, AlignTop);
+            consumed = true;
+        } else if(event.event == WeeboCustomEventWritingUserData) {
+            popup_set_text(weebo->popup, "Writing user data", 64, 36, AlignCenter, AlignTop);
+            consumed = true;
+        } else if(event.event == WeeboCustomEventWritingConfigData) {
+            popup_set_text(weebo->popup, "Writing config data", 64, 36, AlignCenter, AlignTop);
             consumed = true;
         } else if(event.event == WeeboCustomEventWriteSuccess) {
             popup_set_text(weebo->popup, "Write success", 64, 36, AlignCenter, AlignTop);
