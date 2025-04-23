@@ -2,7 +2,7 @@
 
 A flipper zero NTAG215 writer
 
-![Demo Video](https://raw.githubusercontent.com/bettse/weebo/main/demo.mp4)
+![Demo Video](demo.mp4)
 
 ## Todo
 
