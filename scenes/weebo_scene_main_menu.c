@@ -3,7 +3,8 @@
 #define TAG "SceneMainMenu"
 
 enum SubmenuIndex {
-    SubmenuIndexFileSaved = 0,
+    SubmenuIndexSaved = 0,
+    SubmenuIndexAcknowledgements,
 };
 
 void weebo_scene_main_menu_submenu_callback(void* context, uint32_t index) {
@@ -17,7 +18,11 @@ void weebo_scene_main_menu_on_enter(void* context) {
     submenu_reset(submenu);
 
     submenu_add_item(
-        submenu, "Saved", SubmenuIndexFileSaved, weebo_scene_main_menu_submenu_callback, weebo);
+        submenu, "Saved", SubmenuIndexSaved, weebo_scene_main_menu_submenu_callback, weebo);
+    submenu_add_item(
+        submenu, "Acknowledgements", SubmenuIndexAcknowledgements, weebo_scene_main_menu_submenu_callback, weebo);
+
+
 
     submenu_set_selected_item(
         submenu, scene_manager_get_scene_state(weebo->scene_manager, WeeboSceneMainMenu));
@@ -30,8 +35,11 @@ bool weebo_scene_main_menu_on_event(void* context, SceneManagerEvent event) {
 
     if(event.type == SceneManagerEventTypeCustom) {
         scene_manager_set_scene_state(weebo->scene_manager, WeeboSceneMainMenu, event.event);
-        if(event.event == SubmenuIndexFileSaved) {
+        if(event.event == SubmenuIndexSaved) {
             scene_manager_next_scene(weebo->scene_manager, WeeboSceneFileSelect);
+            consumed = true;
+        } else if(event.event == SubmenuIndexAcknowledgements) {
+          scene_manager_next_scene(weebo->scene_manager, WeeboSceneAcknowledgements);
             consumed = true;
         }
     }
