@@ -4,6 +4,7 @@
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 #define FIGURE_ID_LIST            APP_ASSETS_PATH("figure_ids.nfc")
+#define UNPACKED_FIGURE_ID         0x1dc
 #define NFC_APP_EXTENSION         ".nfc"
 #define NFC_APP_PATH_PREFIX       "/ext/nfc"
 
@@ -138,13 +139,18 @@ static bool
     return parsed;
 }
 
-bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
-    bool parsed = false;
-
+uint16_t weebo_get_figure_id(Weebo* weebo) {
     uint16_t id = 0;
     id |= weebo->figure[UNPACKED_FIGURE_ID + 0] << 8;
     id |= weebo->figure[UNPACKED_FIGURE_ID + 1] << 0;
     FURI_LOG_D(TAG, "id = %04x", id);
+    return id;
+}
+
+bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
+    bool parsed = false;
+
+    uint16_t id = weebo_get_figure_id(weebo);
 
     FuriString* key = furi_string_alloc_printf("%04x", id);
     if(weebo_search_data(weebo->storage, FIGURE_ID_LIST, key, name)) {
