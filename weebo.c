@@ -4,7 +4,7 @@
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 #define FIGURE_ID_LIST            APP_ASSETS_PATH("figure_ids.nfc")
-#define UNPACKED_FIGURE_ID         0x1dc
+#define UNPACKED_FIGURE_ID        0x1dc
 #define NFC_APP_EXTENSION         ".nfc"
 #define NFC_APP_PATH_PREFIX       "/ext/nfc"
 
