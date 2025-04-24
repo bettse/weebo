@@ -42,6 +42,7 @@
 
 #define WEEBO_TEXT_STORE_SIZE      128
 #define WEEBO_FILE_NAME_MAX_LENGTH 64
+#define UNPACKED_FIGURE_ID         0x1dc
 
 #define NTAG215_SIZE     540
 #define NFC3D_UID_OFFSET 0x1D4

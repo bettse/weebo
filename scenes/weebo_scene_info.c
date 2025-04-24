@@ -17,6 +17,10 @@ void weebo_scene_info_on_enter(void* context) {
         furi_string_cat_printf(str, "Unknown\n");
     }
     furi_string_free(name);
+    uint16_t id = 0;
+    id |= weebo->figure[UNPACKED_FIGURE_ID + 0] << 8;
+    id |= weebo->figure[UNPACKED_FIGURE_ID + 1] << 0;
+    furi_string_cat_printf(str, "ID: %04x\n", id);
 
     text_box_set_font(weebo->text_box, TextBoxFontText);
     text_box_set_text(weebo->text_box, furi_string_get_cstr(weebo->text_box_store));

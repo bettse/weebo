@@ -4,7 +4,6 @@
 
 #define WEEBO_KEY_RETAIL_FILENAME "key_retail"
 #define FIGURE_ID_LIST            APP_ASSETS_PATH("figure_ids.nfc")
-#define UNPACKED_FIGURE_ID        0x1dc
 #define NFC_APP_EXTENSION         ".nfc"
 #define NFC_APP_PATH_PREFIX       "/ext/nfc"
 
@@ -168,7 +167,9 @@ bool weebo_file_select(Weebo* weebo) {
 
     FuriString* weebo_app_folder;
 
-    if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibo")) {
+    if(storage_dir_exists(weebo->storage, "/ext/nfc/SmashAmiibo")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/SmashAmiibo");
+    } else if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibo")) {
         weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibo");
     } else if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibos")) {
         weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibos");
