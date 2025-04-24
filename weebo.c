@@ -139,13 +139,18 @@ static bool
     return parsed;
 }
 
-bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
-    bool parsed = false;
-
+uint16_t weebo_get_figure_id(Weebo* weebo) {
     uint16_t id = 0;
     id |= weebo->figure[UNPACKED_FIGURE_ID + 0] << 8;
     id |= weebo->figure[UNPACKED_FIGURE_ID + 1] << 0;
     FURI_LOG_D(TAG, "id = %04x", id);
+    return id;
+}
+
+bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
+    bool parsed = false;
+
+    uint16_t id = weebo_get_figure_id(weebo);
 
     FuriString* key = furi_string_alloc_printf("%04x", id);
     if(weebo_search_data(weebo->storage, FIGURE_ID_LIST, key, name)) {
@@ -168,7 +173,9 @@ bool weebo_file_select(Weebo* weebo) {
 
     FuriString* weebo_app_folder;
 
-    if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibo")) {
+    if(storage_dir_exists(weebo->storage, "/ext/nfc/SmashAmiibo")) {
+        weebo_app_folder = furi_string_alloc_set("/ext/nfc/SmashAmiibo");
+    } else if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibo")) {
         weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibo");
     } else if(storage_dir_exists(weebo->storage, "/ext/nfc/Amiibos")) {
         weebo_app_folder = furi_string_alloc_set("/ext/nfc/Amiibos");
