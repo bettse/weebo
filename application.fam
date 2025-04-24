@@ -17,5 +17,5 @@ App(
     fap_author="bettse",
     fap_weburl="https://github.com/bettse/weebo",
     fap_version="0.2",
-    fap_description="A maker/emulator/remixer for A figure files",
+    fap_description="An NTAG215 parser, writer, emulator, remixer, duplicator",
 )
