@@ -20,6 +20,9 @@ void weebo_scene_info_on_enter(void* context) {
     if(weebo_get_figure_form(weebo, name)) {
         furi_string_cat_printf(str, "Form: %s\n", furi_string_get_cstr(name));
     }
+    if(weebo_get_figure_series(weebo, name)) {
+        furi_string_cat_printf(str, "Series: %s\n", furi_string_get_cstr(name));
+    }
 
     furi_string_free(name);
     text_box_set_font(weebo->text_box, TextBoxFontText);

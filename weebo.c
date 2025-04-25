@@ -171,6 +171,69 @@ bool weebo_get_figure_form(Weebo* weebo, FuriString* name) {
     return parsed;
 }
 
+bool weebo_get_figure_series(Weebo* weebo, FuriString* name) {
+    bool parsed = false;
+
+    uint8_t series_id = weebo->figure[UNPACKED_FIGURE_ID + 6];
+    switch(series_id) {
+    case 0x00:
+        furi_string_set_str(name, "Smash Bros");
+        parsed = true;
+        break;
+    case 0x01:
+        furi_string_set_str(name, "Mario Bros");
+        parsed = true;
+        break;
+    case 0x02:
+        furi_string_set_str(name, "Chibi Robo");
+        parsed = true;
+        break;
+    case 0x03:
+        furi_string_set_str(name, "Yarn Yoshi");
+        parsed = true;
+        break;
+    case 0x04:
+        furi_string_set_str(name, "Splatoon");
+        parsed = true;
+        break;
+    case 0x05:
+        furi_string_set_str(name, "Animal Crossing");
+        parsed = true;
+        break;
+    case 0x06:
+        furi_string_set_str(name, "8-bit Mario");
+        parsed = true;
+        break;
+    case 0x07:
+        furi_string_set_str(name, "Skylanders");
+        parsed = true;
+        break;
+    case 0x09:
+        furi_string_set_str(name, "Legend of Zelda");
+        parsed = true;
+        break;
+    case 0x0A:
+        furi_string_set_str(name, "Shovel Knight");
+        parsed = true;
+        break;
+    case 0x0C:
+        furi_string_set_str(name, "Kirby");
+        parsed = true;
+        break;
+    case 0x0D:
+        furi_string_set_str(name, "Pokken");
+        parsed = true;
+        break;
+    case 0x0F:
+        furi_string_set_str(name, "Monster Hunter");
+        parsed = true;
+        break;
+    default:
+        break;
+    }
+    return parsed;
+}
+
 bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
     bool parsed = false;
 
