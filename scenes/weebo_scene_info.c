@@ -8,17 +8,20 @@ void weebo_scene_info_on_enter(void* context) {
 
     furi_string_reset(weebo->text_box_store);
     FuriString* str = weebo->text_box_store;
-
     FuriString* name = furi_string_alloc();
+
     furi_string_cat_printf(str, "Info:\n");
     if(weebo_get_figure_name(weebo, name)) {
         furi_string_cat_printf(str, "%s\n", furi_string_get_cstr(name));
     } else {
         furi_string_cat_printf(str, "Unknown\n");
     }
-    furi_string_free(name);
     furi_string_cat_printf(str, "ID: %04x\n", weebo_get_figure_id(weebo));
+    if(weebo_get_figure_form(weebo, name)) {
+        furi_string_cat_printf(str, "Form: %s\n", furi_string_get_cstr(name));
+    }
 
+    furi_string_free(name);
     text_box_set_font(weebo->text_box, TextBoxFontText);
     text_box_set_text(weebo->text_box, furi_string_get_cstr(weebo->text_box_store));
     view_dispatcher_switch_to_view(weebo->view_dispatcher, WeeboViewTextBox);

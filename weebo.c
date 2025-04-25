@@ -147,6 +147,30 @@ uint16_t weebo_get_figure_id(Weebo* weebo) {
     return id;
 }
 
+bool weebo_get_figure_form(Weebo* weebo, FuriString* name) {
+    bool parsed = false;
+    uint8_t form = weebo->figure[UNPACKED_FIGURE_ID + 3];
+    FURI_LOG_D(TAG, "form = %02x", form);
+    switch(form) {
+    case 0x00:
+        furi_string_set_str(name, "Figure");
+        parsed = true;
+        break;
+    case 0x01:
+        furi_string_set_str(name, "Card");
+        parsed = true;
+        break;
+    case 0x02:
+        furi_string_set_str(name, "Yarn");
+        parsed = true;
+        break;
+    default:
+        break;
+    }
+
+    return parsed;
+}
+
 bool weebo_get_figure_name(Weebo* weebo, FuriString* name) {
     bool parsed = false;
 
