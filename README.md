@@ -4,7 +4,7 @@ A powerful Flipper Zero NTAG215 parser, writer, emulator, remixer, and duplicato
 
 ![Demo Video](demo.mp4)
 
-## 'key_retail.bin`
+## `key_retail.bin`
 
 This is a file required by lots of amiibo makokg apps and tools, but isnt in liddd for legal reasons.
 
