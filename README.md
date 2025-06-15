@@ -4,6 +4,13 @@ A powerful Flipper Zero NTAG215 parser, writer, emulator, remixer, and duplicato
 
 ![Demo Video](demo.mp4)
 
+## 'key_retail.bin`
+
+This is a file required by lots of amiibo makokg apps and tools, but isnt in liddd for legal reasons.
+
+google "key_retail.bin" and you should be able to find kt.
+
+
 ## Features
 
 - Parse, write, and emulate NTAG215 NFC tags with your Flipper Zero.
