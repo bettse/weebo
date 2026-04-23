@@ -136,14 +136,14 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
                 nfc_listener_free(weebo->listener);
                 weebo->listener = NULL;
 
-                if(weebo_cycle_to_prev_file(weebo)) {
+                if(weebo_cycle_file(weebo, WeeboCycleDirectionPrev)) {
                     FURI_LOG_D(TAG, "Starting listener with prev file");
+                    restart_listener_with_current_data(weebo);
+                    weebo_scene_emulate_draw_screen(weebo);
                 } else {
-                    // If loading fails, restart with current file
-                    nfc_device_load(weebo->nfc_device, furi_string_get_cstr(weebo->load_path));
+                    // If cycling fails (no valid files), stop trying
+                    FURI_LOG_W(TAG, "Cannot cycle to prev file - no valid files found");
                 }
-                restart_listener_with_current_data(weebo);
-                weebo_scene_emulate_draw_screen(weebo);
             }
             consumed = true;
 
@@ -156,14 +156,14 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
                 nfc_listener_free(weebo->listener);
                 weebo->listener = NULL;
 
-                if(weebo_cycle_to_next_file(weebo)) {
+                if(weebo_cycle_file(weebo, WeeboCycleDirectionNext)) {
                     FURI_LOG_D(TAG, "Starting listener with next file");
+                    restart_listener_with_current_data(weebo);
+                    weebo_scene_emulate_draw_screen(weebo);
                 } else {
-                    // If loading fails, restart with current file
-                    nfc_device_load(weebo->nfc_device, furi_string_get_cstr(weebo->load_path));
+                    // If cycling fails (no valid files), stop trying
+                    FURI_LOG_W(TAG, "Cannot cycle to next file - no valid files found");
                 }
-                restart_listener_with_current_data(weebo);
-                weebo_scene_emulate_draw_screen(weebo);
             }
             consumed = true;
         }

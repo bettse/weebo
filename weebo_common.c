@@ -174,28 +174,37 @@ bool weebo_load_current_file(Weebo* weebo) {
     return result;
 }
 
-bool weebo_cycle_to_next_file(Weebo* weebo) {
+bool weebo_cycle_file(Weebo* weebo, WeeboCycleDirection direction) {
     furi_assert(weebo);
 
     if(!weebo->nfc_file_list || weebo->nfc_file_count == 0) {
         return false;
     }
 
-    weebo->current_file_index = (weebo->current_file_index + 1) % weebo->nfc_file_count;
-    return weebo_load_current_file(weebo);
-}
+    size_t original_index = weebo->current_file_index;
+    size_t attempts = 0;
 
-bool weebo_cycle_to_prev_file(Weebo* weebo) {
-    furi_assert(weebo);
+    do {
+        if(direction == WeeboCycleDirectionNext) {
+            weebo->current_file_index = (weebo->current_file_index + 1) % weebo->nfc_file_count;
+        } else {
+            if(weebo->current_file_index == 0) {
+                weebo->current_file_index = weebo->nfc_file_count - 1;
+            } else {
+                weebo->current_file_index--;
+            }
+        }
+        attempts++;
 
-    if(!weebo->nfc_file_list || weebo->nfc_file_count == 0) {
-        return false;
-    }
+        if(weebo_load_current_file(weebo)) {
+            return true; // Successfully loaded a valid file
+        }
 
-    if(weebo->current_file_index == 0) {
-        weebo->current_file_index = weebo->nfc_file_count - 1;
-    } else {
-        weebo->current_file_index--;
-    }
-    return weebo_load_current_file(weebo);
+        FURI_LOG_W(TAG, "Skipping invalid file: %s", weebo->file_name);
+
+    } while(weebo->current_file_index != original_index && attempts < weebo->nfc_file_count);
+
+    // If we get here, all files are invalid or we couldn't load any
+    weebo->current_file_index = original_index; // Restore original position
+    return false;
 }
