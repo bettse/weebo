@@ -70,7 +70,7 @@ bool weebo_scan_nfc_files(Weebo* weebo, const char* directory) {
         if(file_info.flags & FSF_DIRECTORY) continue;
 
         size_t len = strlen(path);
-        if(len > 4 && strcmp(path + len - 4, ".nfc") == 0) {
+        if(len > 4 && strcmp(path + len - 4, NFC_APP_EXTENSION) == 0) {
             file_count++;
             if(file_count >= WEEBO_MAX_NFC_FILES) {
                 FURI_LOG_W(TAG, "Reached maximum file limit (%d), stopping scan", WEEBO_MAX_NFC_FILES);
@@ -105,7 +105,7 @@ bool weebo_scan_nfc_files(Weebo* weebo, const char* directory) {
         if(file_info.flags & FSF_DIRECTORY) continue;
 
         size_t len = strlen(path);
-        if(len > 4 && strcmp(path + len - 4, ".nfc") == 0) {
+        if(len > 4 && strcmp(path + len - 4, NFC_APP_EXTENSION) == 0) {
             FuriString* full_path = furi_string_alloc();
             furi_string_printf(full_path, "%s/%s", directory, path);
             weebo->nfc_file_list[weebo->nfc_file_count] = full_path;

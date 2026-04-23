@@ -47,6 +47,7 @@
 #define NTAG215_SIZE     540
 #define NFC3D_UID_OFFSET 0x1D4
 #define PAGE_SIZE        4
+#define NFC_APP_EXTENSION ".nfc"
 
 enum WeeboCustomEvent {
     // Reserve first 100 events for button types and indexes, starting from 0
