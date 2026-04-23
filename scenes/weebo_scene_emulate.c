@@ -4,6 +4,12 @@
 
 #define TAG "SceneEmulate"
 
+static void restart_listener_with_current_data(Weebo* weebo) {
+    const MfUltralightData* data = nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
+    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
+    nfc_listener_start(weebo->listener, NULL, NULL);
+}
+
 void weebo_scene_emulate_widget_callback(GuiButtonType result, InputType type, void* context) {
     furi_assert(context);
     Weebo* weebo = context;
@@ -116,10 +122,7 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
             weebo_remix(weebo);
             //start listener
             FURI_LOG_D(TAG, "Starting listener");
-            const MfUltralightData* data =
-                nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-            weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-            nfc_listener_start(weebo->listener, NULL, NULL);
+            restart_listener_with_current_data(weebo);
 
             weebo_scene_emulate_draw_screen(weebo);
             consumed = true;
@@ -134,22 +137,13 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
                 weebo->listener = NULL;
 
                 if(weebo_cycle_to_prev_file(weebo)) {
-                    //start listener with new file
                     FURI_LOG_D(TAG, "Starting listener with prev file");
-                    const MfUltralightData* data =
-                        nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-                    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-                    nfc_listener_start(weebo->listener, NULL, NULL);
-
-                    weebo_scene_emulate_draw_screen(weebo);
                 } else {
                     // If loading fails, restart with current file
                     nfc_device_load(weebo->nfc_device, furi_string_get_cstr(weebo->load_path));
-                    const MfUltralightData* data =
-                        nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-                    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-                    nfc_listener_start(weebo->listener, NULL, NULL);
                 }
+                restart_listener_with_current_data(weebo);
+                weebo_scene_emulate_draw_screen(weebo);
             }
             consumed = true;
 
@@ -163,22 +157,13 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
                 weebo->listener = NULL;
 
                 if(weebo_cycle_to_next_file(weebo)) {
-                    //start listener with new file
                     FURI_LOG_D(TAG, "Starting listener with next file");
-                    const MfUltralightData* data =
-                        nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-                    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-                    nfc_listener_start(weebo->listener, NULL, NULL);
-
-                    weebo_scene_emulate_draw_screen(weebo);
                 } else {
                     // If loading fails, restart with current file
                     nfc_device_load(weebo->nfc_device, furi_string_get_cstr(weebo->load_path));
-                    const MfUltralightData* data =
-                        nfc_device_get_data(weebo->nfc_device, NfcProtocolMfUltralight);
-                    weebo->listener = nfc_listener_alloc(weebo->nfc, NfcProtocolMfUltralight, data);
-                    nfc_listener_start(weebo->listener, NULL, NULL);
                 }
+                restart_listener_with_current_data(weebo);
+                weebo_scene_emulate_draw_screen(weebo);
             }
             consumed = true;
         }
