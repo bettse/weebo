@@ -39,13 +39,14 @@ void weebo_scene_emulate_draw_screen(Weebo* weebo) {
         data->iso14443_3a_data->uid[6]);
 
     // Show file info with counter
-    if(weebo->nfc_file_count > 0) {
+    size_t file_count = weebo_get_file_count(weebo);
+    if(file_count > 0) {
         furi_string_printf(
             file_str,
             "%s (%zu/%zu)",
             weebo->file_name,
-            weebo->current_file_index + 1,
-            weebo->nfc_file_count);
+            weebo_get_current_file_index(weebo) + 1,
+            file_count);
     } else {
         furi_string_cat_printf(file_str, "%s", weebo->file_name);
     }
@@ -62,7 +63,7 @@ void weebo_scene_emulate_draw_screen(Weebo* weebo) {
         widget, GuiButtonTypeCenter, "Remix", weebo_scene_emulate_widget_callback, weebo);
 
     // Only show prev/next buttons if there are multiple files
-    if(weebo->nfc_file_count > 1) {
+    if(file_count > 1) {
         widget_add_button_element(
             widget, GuiButtonTypeLeft, "Prev", weebo_scene_emulate_widget_callback, weebo);
         widget_add_button_element(
@@ -85,14 +86,7 @@ void weebo_scene_emulate_on_enter(void* context) {
     weebo_scan_nfc_files(weebo, furi_string_get_cstr(directory));
 
     // Find current file index in the scanned list
-    if(weebo->nfc_file_list && weebo->nfc_file_count > 0) {
-        for(size_t i = 0; i < weebo->nfc_file_count; i++) {
-            if(furi_string_equal(weebo->nfc_file_list[i], weebo->load_path)) {
-                weebo->current_file_index = i;
-                break;
-            }
-        }
-    }
+    weebo_set_current_file_path(weebo, furi_string_get_cstr(weebo->load_path));
 
     furi_string_free(directory);
 
@@ -129,7 +123,7 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
 
         } else if(event.event == GuiButtonTypeLeft) {
             // Previous file
-            if(weebo->nfc_file_count > 1) {
+            if(weebo_get_file_count(weebo) > 1) {
                 //stop listener
                 FURI_LOG_D(TAG, "Stopping listener for prev file");
                 nfc_listener_stop(weebo->listener);
@@ -149,7 +143,7 @@ bool weebo_scene_emulate_on_event(void* context, SceneManagerEvent event) {
 
         } else if(event.event == GuiButtonTypeRight) {
             // Next file
-            if(weebo->nfc_file_count > 1) {
+            if(weebo_get_file_count(weebo) > 1) {
                 //stop listener
                 FURI_LOG_D(TAG, "Stopping listener for next file");
                 nfc_listener_stop(weebo->listener);

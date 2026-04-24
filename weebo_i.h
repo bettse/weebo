@@ -42,12 +42,10 @@
 
 #define WEEBO_TEXT_STORE_SIZE      128
 #define WEEBO_FILE_NAME_MAX_LENGTH 64
-#define WEEBO_MAX_NFC_FILES        200
 
 #define NTAG215_SIZE     540
 #define NFC3D_UID_OFFSET 0x1D4
 #define PAGE_SIZE        4
-#define NFC_APP_EXTENSION ".nfc"
 
 enum WeeboCustomEvent {
     // Reserve first 100 events for button types and indexes, starting from 0
@@ -96,9 +94,7 @@ struct Weebo {
     char file_name[WEEBO_FILE_NAME_MAX_LENGTH + 1];
 
     // File cycling support
-    FuriString** nfc_file_list;
-    size_t nfc_file_count;
-    size_t current_file_index;
+    WeeboFileList* file_list;
 
     bool keys_loaded;
     nfc3d_amiibo_keys keys;

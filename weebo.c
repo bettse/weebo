@@ -385,10 +385,8 @@ Weebo* weebo_alloc() {
     weebo->dialogs = furi_record_open(RECORD_DIALOGS);
     weebo->load_path = furi_string_alloc();
 
-    // Initialize file cycling fields
-    weebo->nfc_file_list = NULL;
-    weebo->nfc_file_count = 0;
-    weebo->current_file_index = 0;
+    // Initialize file cycling
+    weebo->file_list = weebo_file_list_alloc();
 
     weebo->keys_loaded = false;
 
@@ -449,7 +447,7 @@ void weebo_free(Weebo* weebo) {
     furi_string_free(weebo->load_path);
 
     // Clean up file cycling
-    weebo_free_nfc_file_list(weebo);
+    weebo_file_list_free(weebo->file_list);
 
     furi_record_close(RECORD_STORAGE);
     furi_record_close(RECORD_DIALOGS);
