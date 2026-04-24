@@ -64,7 +64,8 @@ bool weebo_file_list_scan(WeeboFileList* file_list, Storage* storage, const char
         if(len > 4 && strcmp(path + len - 4, NFC_APP_EXTENSION) == 0) {
             file_count++;
             if(file_count >= WEEBO_MAX_NFC_FILES) {
-                FURI_LOG_W(TAG, "Reached maximum file limit (%d), stopping scan", WEEBO_MAX_NFC_FILES);
+                FURI_LOG_W(
+                    TAG, "Reached maximum file limit (%d), stopping scan", WEEBO_MAX_NFC_FILES);
                 break;
             }
         }
